@@ -1,0 +1,23 @@
+{
+  "problem": "convection",
+  "model": "PINNsFormer",
+  "grid_size": 51,
+  "test_grid_size": 101,
+  "sequence_length": 5,
+  "sequence_step": 0.0001,
+  "d_model": 32,
+  "d_hidden": 512,
+  "heads": 2,
+  "encoder_layers": 1,
+  "optimizer": "LBFGS strong_wolfe",
+  "epochs": 1000,
+  "paper_table1_loss": 3.7e-05,
+  "paper_table1_rMAE": 0.023,
+  "paper_table1_rRMSE": 0.027,
+  "train_loss": 8.078339851635974e-05,
+  "loss_res": 2.611057652757154e-06,
+  "loss_bc": 7.479300256818533e-05,
+  "loss_ic": 3.3793382954172557e-06,
+  "rMAE_relative_L1": 0.020563464004592583,
+  "rRMSE_relative_L2": 0.02411587217084296
+}
