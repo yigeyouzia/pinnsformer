@@ -1,0 +1,11 @@
+seed,method,threshold,first_sampled_step_below
+1,Adam Simple-Sum,0.01,70
+1,Adam Simple-Sum,0.005,170
+1,Adam Simple-Sum,0.002,370
+1,Adam Simple-Sum,0.001,580
+1,Adam Simple-Sum,0.0005,890
+1,Adam + ConFIG,0.01,40
+1,Adam + ConFIG,0.005,80
+1,Adam + ConFIG,0.002,130
+1,Adam + ConFIG,0.001,160
+1,Adam + ConFIG,0.0005,910

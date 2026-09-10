@@ -1,0 +1,6 @@
+threshold,Adam Simple-Sum step,Adam + ConFIG step
+0.01,60,30
+0.005,160,70
+0.002,410,130
+0.001,630,170
+0.0005,900,730

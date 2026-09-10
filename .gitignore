@@ -14,3 +14,7 @@ __pycache__/
 
 # Conda environment
 checkpoint/environment.yml
+
+*.zip
+
+*.png

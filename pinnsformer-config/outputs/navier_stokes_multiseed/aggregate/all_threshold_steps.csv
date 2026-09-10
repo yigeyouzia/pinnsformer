@@ -1,0 +1,31 @@
+seed,method,threshold,first_sampled_step_below
+0,Adam Simple-Sum,0.01,60
+0,Adam Simple-Sum,0.005,160
+0,Adam Simple-Sum,0.002,410
+0,Adam Simple-Sum,0.001,630
+0,Adam Simple-Sum,0.0005,900
+0,Adam + ConFIG,0.01,30
+0,Adam + ConFIG,0.005,70
+0,Adam + ConFIG,0.002,130
+0,Adam + ConFIG,0.001,170
+0,Adam + ConFIG,0.0005,730
+1,Adam Simple-Sum,0.01,70
+1,Adam Simple-Sum,0.005,170
+1,Adam Simple-Sum,0.002,370
+1,Adam Simple-Sum,0.001,580
+1,Adam Simple-Sum,0.0005,890
+1,Adam + ConFIG,0.01,40
+1,Adam + ConFIG,0.005,80
+1,Adam + ConFIG,0.002,130
+1,Adam + ConFIG,0.001,160
+1,Adam + ConFIG,0.0005,910
+2,Adam Simple-Sum,0.01,60
+2,Adam Simple-Sum,0.005,160
+2,Adam Simple-Sum,0.002,370
+2,Adam Simple-Sum,0.001,610
+2,Adam Simple-Sum,0.0005,970
+2,Adam + ConFIG,0.01,40
+2,Adam + ConFIG,0.005,70
+2,Adam + ConFIG,0.002,120
+2,Adam + ConFIG,0.001,170
+2,Adam + ConFIG,0.0005,730

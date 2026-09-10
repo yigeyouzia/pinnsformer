@@ -1,0 +1,21 @@
+{
+  "seed": 1,
+  "method": "Adam Simple-Sum",
+  "optimizer": "Adam",
+  "lr": 0.0001,
+  "epochs": 1000,
+  "n_train": 800,
+  "num_step": 5,
+  "time_step": 0.01,
+  "diag_interval": 10,
+  "model_params": 454106,
+  "wall_time_s": 655.5888137817383,
+  "peak_vram_mib": 8535.08154296875,
+  "diagnostic_summary": {
+    "n": 101,
+    "mean_cosine": -0.7019678880598875,
+    "min_cosine": -0.9919324517250061,
+    "max_cosine": 0.8560819625854492,
+    "conflict_rate": 0.8514851485148515
+  }
+}

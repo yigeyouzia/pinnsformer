@@ -1,0 +1,21 @@
+{
+  "seed": 1,
+  "method": "Adam + ConFIG",
+  "optimizer": "Adam",
+  "lr": 0.0001,
+  "epochs": 1000,
+  "n_train": 800,
+  "num_step": 5,
+  "time_step": 0.01,
+  "diag_interval": 10,
+  "model_params": 454106,
+  "wall_time_s": 662.6994659900665,
+  "peak_vram_mib": 7657.06640625,
+  "full_conflict_summary": {
+    "n": 1000,
+    "mean_cosine": -0.49479861382121454,
+    "min_cosine": -0.9911906719207764,
+    "max_cosine": 0.8903890252113342,
+    "conflict_rate": 0.768
+  }
+}
