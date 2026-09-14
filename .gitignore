@@ -18,3 +18,8 @@ checkpoint/environment.yml
 *.zip
 
 *.png
+
+metric_history.csv
+field_metrics.csv
+all*.cvs
+all*.cvs
