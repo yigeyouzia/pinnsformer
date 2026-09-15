@@ -1,101 +1,106 @@
 # AGENTS.md — pinnsformer-config
 
-This file is the handoff contract for ChatGPT/Codex/other agents working in `pinnsformer-config/`.
+This file is the handoff contract for ChatGPT, Codex, and other agents working in `pinnsformer-config/`.
 
 ## Scope
 
 - Repository: `yigeyouzia/pinnsformer`
 - Working area: `pinnsformer-config/`
 - Purpose: executable PINN/PINNsFormer experiments, reproduction, diagnostics, and method development.
-- Do not use this repository as the main paper/knowledge-base store. That role belongs to `yigeyouzia/ts-pinn-agent`.
+- Paper notes, knowledge-base material, and agent/project management belong in `yigeyouzia/ts-pinn-agent`.
 
-## Stable paths
+## Git policy — main only
+
+This repository uses a **main-only workflow**.
+
+- Work directly on `main`.
+- Do **not** create feature, experiment, temporary, or agent branches.
+- Do **not** open a PR for ordinary automated changes in this repository unless the user explicitly asks for one.
+- Before writing, read the latest `main`; after validation, commit/push directly to `main`.
+- If an old temporary branch exists from historical work, it is not a valid target for new changes and should be removed after its contents are present on `main`.
+- Never force-push or rewrite `main` history unless the user explicitly requests it.
+
+## Stable shared modules
 
 Canonical shared modules stay at the root of `pinnsformer-config/`:
 
 - `navier_stokes_common.py`
 - `gradient_diagnostics.py`
 
-Do not move or rename them without updating every notebook/import and the compatibility symlinks under `notebooks/navier_stokes/`.
+Do not move or rename them without updating all imports and compatibility links.
 
-Navier–Stokes notebooks live under:
+## Notebook layout
 
-```text
-pinnsformer-config/notebooks/navier_stokes/
-```
-
-Generated experiment artifacts live under:
+Navier–Stokes notebooks are grouped by method name:
 
 ```text
-pinnsformer-config/outputs/
+notebooks/navier_stokes/
+├── adam/
+├── config/
+├── mconfig/
+├── autobalance/
+├── harmonic/
+├── chebyshev/
+└── analysis/
 ```
 
-Curated small tables that should remain versioned live under:
+Each method directory may contain compatibility symlinks back to the root shared modules and `outputs/`. Do not replace those links with divergent copied implementations.
 
-```text
-pinnsformer-config/results/summaries/
-```
+### Adam
 
-## Current file inventory
+- `notebooks/navier_stokes/adam/navier_stokes_adam_baseline.ipynb`
 
-### Shared code
+### ConFIG
 
-- `gradient_diagnostics.py`
-- `navier_stokes_common.py`
-
-### Baseline
-
-- `notebooks/navier_stokes/navier_stokes_adam_baseline.ipynb`
-
-### ConFIG / multi-loss
-
-- `notebooks/navier_stokes/navier_stokes_config.ipynb`
-- `notebooks/navier_stokes/navier_stokes_config2.ipynb`
-- `notebooks/navier_stokes/navier_stokes_multiseed_runner.ipynb`
-- `notebooks/navier_stokes/navier_stokes_4loss_multiseed_runner.ipynb`
+- `notebooks/navier_stokes/config/navier_stokes_config.ipynb`
+- `notebooks/navier_stokes/config/navier_stokes_config2.ipynb`
+- `notebooks/navier_stokes/config/navier_stokes_multiseed_runner.ipynb`
+- `notebooks/navier_stokes/config/navier_stokes_4loss_multiseed_runner.ipynb`
 
 ### M-ConFIG
 
-- `notebooks/navier_stokes/navier_stokes_mconfig4_fixed_roundrobin_runner.ipynb`
-- `notebooks/navier_stokes/navier_stokes_adaptive_mconfig4_runner.ipynb`
-- `notebooks/navier_stokes/navier_stokes_adaptive_mconfig4_rr_override_v2_runner.ipynb`
+- `notebooks/navier_stokes/mconfig/navier_stokes_mconfig4_fixed_roundrobin_runner.ipynb`
+- `notebooks/navier_stokes/mconfig/navier_stokes_adaptive_mconfig4_runner.ipynb`
+- `notebooks/navier_stokes/mconfig/navier_stokes_adaptive_mconfig4_rr_override_v2_runner.ipynb`
 
-### Other balancing methods
+### AutoBalance
 
-- `notebooks/navier_stokes/navier_stokes_autobalance4_runner.ipynb`
-- `notebooks/navier_stokes/navier_stokes_harmonic4_runner_serverpath.ipynb`
+- `notebooks/navier_stokes/autobalance/navier_stokes_autobalance4_runner.ipynb`
 
-### Diagnostics / analysis
+### HARMONIC
 
-- `notebooks/navier_stokes/navier_stokes_gradient_diagnostic.ipynb`
-- `notebooks/navier_stokes/navier_stokes_adam_vs_config_analysis.ipynb`
-- `notebooks/navier_stokes/cylinder_nektar_wake_dataset_explorer.ipynb`
-- `notebooks/navier_stokes/plot.ipynb`
+- `notebooks/navier_stokes/harmonic/navier_stokes_harmonic4_runner_serverpath.ipynb`
 
-### Curated summaries
+### Chebyshev center
 
-- `results/summaries/adam_vs_config/field_metrics_corrected.csv`
-- `results/summaries/adam_vs_config/history_summary.csv`
-- `results/summaries/adam_vs_config/physics_threshold_steps.csv`
-- `results/summaries/navier_stokes_multiseed/all_field_metrics.csv`
-- `results/summaries/navier_stokes_multiseed/all_history_metrics.csv`
-- `results/summaries/navier_stokes_multiseed/all_threshold_steps.csv`
-- `results/summaries/navier_stokes_multiseed/mean_std_summary.csv`
-- `results/summaries/navier_stokes_multiseed/paired_improvement.csv`
-- `results/summaries/navier_stokes_multiseed/threshold_mean_std.csv`
+Reusable implementation:
 
-## Reference notebooks for new methods
+- `notebooks/navier_stokes/chebyshev/chebyshev_runner.py`
 
-When adding a new gradient-balancing method, first inspect these two notebooks and follow their conventions unless there is a concrete reason not to:
+Runnable server notebooks:
 
-1. `notebooks/navier_stokes/navier_stokes_harmonic4_runner_serverpath.ipynb`
-2. `notebooks/navier_stokes/navier_stokes_mconfig4_fixed_roundrobin_runner.ipynb`
+- `notebooks/navier_stokes/chebyshev/navier_stokes_chebyshev2_runner_serverpath.ipynb`
+- `notebooks/navier_stokes/chebyshev/navier_stokes_chebyshev4_runner_serverpath.ipynb`
 
-They are the preferred references for server paths, runner organization, multi-loss handling, output directories, and repeatable experiment structure.
+Both use the same implementation. `p=2` is the primary candidate; `p=4` is a required norm-geometry ablation until experiments justify changing that status.
+
+### Analysis / diagnostics
+
+- `notebooks/navier_stokes/analysis/navier_stokes_gradient_diagnostic.ipynb`
+- `notebooks/navier_stokes/analysis/navier_stokes_adam_vs_config_analysis.ipynb`
+- `notebooks/navier_stokes/analysis/cylinder_nektar_wake_dataset_explorer.ipynb`
+- `notebooks/navier_stokes/analysis/plot.ipynb`
+
+## Reference runners for new methods
+
+When adding a new gradient-balancing method, first inspect:
+
+1. `notebooks/navier_stokes/harmonic/navier_stokes_harmonic4_runner_serverpath.ipynb`
+2. `notebooks/navier_stokes/mconfig/navier_stokes_mconfig4_fixed_roundrobin_runner.ipynb`
+
+Follow their server-path, multi-seed, 4-loss, output, and comparison conventions unless there is a concrete reason not to.
 
 ## Server defaults
-
-Current Linux-server defaults:
 
 ```text
 PINNSFORMER_ROOT=/home/simplexity/cyt/pinnsformer-main
@@ -103,59 +108,55 @@ CONFIG_ROOT=/home/simplexity/cyt/ConFIG-main
 PINNSFORMER_CONFIG_ROOT=/home/simplexity/cyt/pinnsformer-main/pinnsformer-config
 ```
 
-Prefer reading these from environment variables. Do not add a new absolute path when an existing variable can be reused.
+Prefer these environment variables instead of adding new machine-specific paths.
 
-## Git/output policy
+## Output policy
 
-Never commit routine generated artifacts from experiments:
+Generated experiment artifacts belong in:
 
-- checkpoints or model weights: `*.pt`, `*.pth`, `*.ckpt`;
-- raw arrays/history/predictions: `*.npz`, `*.npy`;
-- generated plots: `*.png`, `*.jpg`, `*.jpeg`, `*.svg`;
-- per-run logs and temporary outputs;
-- raw/per-seed CSV files under `outputs/` or `results/raw/`.
+```text
+pinnsformer-config/outputs/
+```
 
-Keep `outputs/` as a local/generated workspace. Promote only compact aggregate tables needed for scientific comparison into `results/summaries/`.
+Do not commit routine generated artifacts:
 
-When adding or removing an important notebook or curated result, update both `README.md` and this file inventory in the same change.
+- `*.pt`, `*.pth`, `*.ckpt`
+- `*.npz`, `*.npy`
+- generated `*.png`, `*.jpg`, `*.jpeg`, `*.svg`
+- per-run logs, raw histories, predictions, and temporary CSV files
+- per-seed CSV files under `outputs/` or `results/raw/`
+
+Promote only compact, checked aggregate tables needed for scientific comparison into:
+
+```text
+pinnsformer-config/results/summaries/
+```
+
+When adding/removing an important notebook or curated result, update both `README.md` and this inventory.
 
 ## Fair-comparison rules
 
-A method comparison is valid only when non-method variables are controlled. Unless explicitly testing an ablation, keep fixed:
+Unless an experiment explicitly tests an ablation, keep fixed:
 
-- network architecture;
-- data sampling/training points;
-- PDE/loss definitions;
-- seed set;
-- optimizer and learning rate where the method permits a fair match;
-- update/function-evaluation budget;
-- evaluation code and metric definitions.
+- PINNsFormer architecture and initialization procedure
+- dataset and sampled training points
+- PDE and loss definitions
+- seed set
+- optimizer family and learning rate when a fair match is intended
+- update/function-evaluation budget
+- evaluation code and metric definitions
 
-Report mean ± std across seeds when the runner supports multiple seeds. Also retain component losses and gradient diagnostics so a result can be explained, not only ranked.
+For multi-seed experiments report mean ± std and keep component losses plus gradient diagnostics. Do not claim a method is better or SOTA from code presence or one favorable seed.
 
-Do not claim a method is SOTA/better because code exists or because one run looks favorable. Distinguish clearly between code-present, run-complete, and statistically supported conclusions.
+## Chebyshev implementation contract
 
-## Chebyshev next-step contract
+The current implementation follows Yoon et al. (2026), arXiv:2605.09975:
 
-The next planned method is Chebyshev-center gradient direction selection.
+1. compute fresh gradients for `u_data`, `v_data`, `f_u`, `f_v`;
+2. normalize each task gradient with the selected `l_p` norm;
+3. solve the simplex dual `min ||sum alpha_i ghat_i||_p` with Frank–Wolfe;
+4. recover the primal `l_q`-unit direction;
+5. apply the paper's adaptive scalar `(sum_i g_i^T v) v`;
+6. feed that final gradient direction to Adam.
 
-Implementation guidance:
-
-- implement one parameterized method path, not separate duplicated Chebyshev-2 and Chebyshev-4 codebases;
-- run both `p=2` and `p=4`;
-- treat `p=2` as the primary candidate and `p=4` as a required geometry/norm ablation initially;
-- compare against at least Adam/simple-sum, ConFIG, M-ConFIG/HARMONIC where budgets are compatible;
-- save raw outputs under `outputs/`;
-- save aggregate comparison tables under `results/summaries/chebyshev/` only after real runs.
-
-Suggested future naming:
-
-```text
-notebooks/navier_stokes/navier_stokes_chebyshev_runner.ipynb
-```
-
-If a standalone reusable implementation is introduced later, prefer a small Python module rather than duplicating algorithm code across notebooks.
-
-## Compatibility symlinks
-
-`notebooks/navier_stokes/` contains symlinks back to the root shared modules and `outputs/`. They exist so reorganizing notebook files does not silently change imports or relative output locations on Linux/macOS. Do not replace them with divergent copied code.
+The implementation supports `p=2` and `p=4` through one parameterized code path. Do not duplicate the algorithm into separate Chebyshev-2 and Chebyshev-4 Python implementations.
