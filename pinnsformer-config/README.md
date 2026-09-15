@@ -1,96 +1,111 @@
----
-title: PINNsFormer + ConFIG 诊断与适配代码
-summary: 基于 PINNsFormer 官方 Navier–Stokes demo 和用户已运行 notebook，先诊断 data/physics 参数梯度冲突，再提供数据、网络和 PDE 设置一致的 Adam simple-sum / ConFIG 2-loss 公平实验。
-type: repo-note
-status: to-run
-created: 2026-09-10
-updated: 2026-09-10
-papers:
-  - PINNsFormer: A Transformer-Based Framework for Physics-Informed Neural Networks
-  - ConFIG: Towards Conflict-Free Training of Physics Informed Neural Networks
-github_repositories:
-  - https://github.com/AdityaLab/pinnsformer
-  - https://github.com/tum-pbs/ConFIG
-data:
-  - PINNsFormer 官方 demo/navier_stokes/cylinder_nektar_wake.mat；公开 demo 数据
----
+# PINNsFormer multi-objective PINN experiments
 
-# PINNsFormer + ConFIG
+`pinnsformer-config/` is the experiment-development area for multi-loss / multi-objective optimization on PINNsFormer. The separate `ts-pinn-agent` repository is used for papers, notes, knowledge-base material, and agent/project management; this repository is for executable experiments, reproductions, diagnostics, and method development.
 
-## 1. 文件
+## Current research line
 
-| 文件 | 作用 | 当前状态 |
-|---|---|---|
-| `gradient_diagnostics.py` | 梯度向量、norm、pairwise cosine、conflict rate | 静态检查完成，待服务器真实运行 |
-| `navier_stokes_common.py` | 共享 PINNsFormer 结构、数据采样、Navier–Stokes loss 与评估张量 | 静态检查完成，待服务器真实运行 |
-| `navier_stokes_gradient_diagnostic.ipynb` | 加载既有 `ns_pinnsformer.pt`，诊断 2-loss/4-loss 梯度冲突 | 待运行 |
-| `navier_stokes_adam_baseline.ipynb` | `Adam(lr=1e-4)` + simple-sum 的公平对照组 | 待运行 |
-| `navier_stokes_config.ipynb` | 同设置下 2-loss `L_data/L_physics` + ConFIG + Adam | 待运行 |
+The current Navier–Stokes line compares gradient/loss balancing methods under a shared PINNsFormer setup. Existing code covers Adam/simple-sum, ConFIG, 4-loss and multi-seed variants, M-ConFIG variants, AutoBalance, and HARMONIC. Chebyshev-center training is the next method to add; use `p=2` as the primary configuration and `p=4` as an ablation unless experiments show otherwise.
 
-## 2. 与上传 notebook 保持不变的设置
-
-- seed = 0；
-- `N_TRAIN = 800`；
-- pseudo sequence 长度 5，时间步 `1e-2`；
-- `PINNsformer(d_out=2, d_hidden=512, d_model=32, N=1, heads=2)`；
-- 数据抽样逻辑和 `cylinder_nektar_wake.mat`；
-- stream-function 训练定义 $u=\psi_y,\ v=-\psi_x$；
-- 两个 Navier–Stokes momentum residual 与黏性系数 0.01；
-- 外层 optimizer steps = 1000。
-
-上传 notebook 原始训练使用 LBFGS strong-Wolfe，而 ConFIG 组合后的梯度一般不再是 `L_total` 的普通梯度，因此不建议直接交给 LBFGS line search。为了把 ConFIG 本身作为唯一变量，本目录同时提供两份**匹配的一阶优化实验**：
+## Layout
 
 ```text
-PINNsFormer + Adam(lr=1e-4) + simple sum
-                 VS
-PINNsFormer + Adam(lr=1e-4) + ConFIG
+pinnsformer-config/
+├── README.md
+├── AGENTS.md
+├── .gitignore
+├── gradient_diagnostics.py          # canonical shared gradient diagnostics
+├── navier_stokes_common.py          # canonical shared PINNsFormer/NS helpers
+├── notebooks/
+│   └── navier_stokes/               # runnable and analysis notebooks
+├── outputs/                         # generated raw runs; ignored by git
+│   └── .gitkeep
+└── results/
+    ├── README.md
+    └── summaries/                   # curated small CSV summaries kept in git
 ```
 
-两者的 seed、数据点、网络、PDE、sequence 和 1000 optimizer steps 相同，只有多损失梯度合成方式不同。`lr=1e-4` 是相对于原 LBFGS notebook 新增的超参数，因此原始 LBFGS 结果只作为“原方法参考”，不能直接用来隔离 ConFIG 的收益。
+`notebooks/navier_stokes/` contains compatibility symlinks for `navier_stokes_common.py`, `gradient_diagnostics.py`, and `outputs/`. This keeps existing imports and relative `./outputs/...` paths working after the notebook reorganization on Linux/macOS.
 
-另外，LBFGS 的一次外层 `step(closure)` 可能多次调用 closure，因此“LBFGS 1000 外层循环”和“Adam 1000 optimizer steps”也不是同等函数评估预算。
+## Notebook inventory
 
-## 3. 运行前环境
+### Baseline
 
-默认路径与服务器一致：
+- `notebooks/navier_stokes/navier_stokes_adam_baseline.ipynb` — Adam + simple-sum baseline.
+
+### ConFIG / multi-loss baselines
+
+- `notebooks/navier_stokes/navier_stokes_config.ipynb` — 2-loss ConFIG experiment.
+- `notebooks/navier_stokes/navier_stokes_config2.ipynb` — alternate/iterated ConFIG notebook retained for reproducibility.
+- `notebooks/navier_stokes/navier_stokes_multiseed_runner.ipynb` — multi-seed Adam/simple-sum vs ConFIG runner.
+- `notebooks/navier_stokes/navier_stokes_4loss_multiseed_runner.ipynb` — 4-loss multi-seed runner.
+
+### M-ConFIG family
+
+- `notebooks/navier_stokes/navier_stokes_mconfig4_fixed_roundrobin_runner.ipynb` — fixed round-robin M-ConFIG runner; preferred reference for the runner structure.
+- `notebooks/navier_stokes/navier_stokes_adaptive_mconfig4_runner.ipynb` — adaptive M-ConFIG variant.
+- `notebooks/navier_stokes/navier_stokes_adaptive_mconfig4_rr_override_v2_runner.ipynb` — adaptive round-robin/override v2 variant.
+
+### Other balancing methods
+
+- `notebooks/navier_stokes/navier_stokes_autobalance4_runner.ipynb` — AutoBalance 4-loss runner.
+- `notebooks/navier_stokes/navier_stokes_harmonic4_runner_serverpath.ipynb` — HARMONIC-4 runner with server-path conventions; preferred reference together with the fixed-round-robin M-ConFIG runner.
+
+### Diagnostics / analysis
+
+- `notebooks/navier_stokes/navier_stokes_gradient_diagnostic.ipynb` — gradient norms, cosine similarity, and conflict diagnosis.
+- `notebooks/navier_stokes/navier_stokes_adam_vs_config_analysis.ipynb` — Adam vs ConFIG analysis.
+- `notebooks/navier_stokes/cylinder_nektar_wake_dataset_explorer.ipynb` — dataset inspection/reconstruction helper.
+- `notebooks/navier_stokes/plot.ipynb` — plotting/inspection notebook.
+
+## Curated results
+
+Raw run artifacts are not source code and should not be committed. Existing useful aggregate CSVs were moved out of `outputs/` into:
 
 ```text
-PINNsFormer: /home/simplexity/cyt/pinnsformer-main
-ConFIG:      /home/simplexity/cyt/ConFIG-main
+results/summaries/adam_vs_config/
+results/summaries/navier_stokes_multiseed/
 ```
 
-可用环境变量覆盖：
+Keep only compact, human-readable tables needed for comparison/reproducibility. Per-seed histories, predictions, checkpoints, `.npz`, generated figures, and temporary CSVs belong in `outputs/` and are ignored.
+
+## Server paths and environment
+
+Existing experiments use these defaults on the Linux server:
 
 ```bash
-export PINNSFORMER_ROOT=/path/to/pinnsformer-main
-export CONFIG_ROOT=/path/to/ConFIG-main
+export PINNSFORMER_ROOT=/home/simplexity/cyt/pinnsformer-main
+export CONFIG_ROOT=/home/simplexity/cyt/ConFIG-main
+export PINNSFORMER_CONFIG_ROOT=$PINNSFORMER_ROOT/pinnsformer-config
 ```
 
-ConFIG 环境至少需要 `torch numpy scipy matplotlib tqdm conflictfree`。如果沿用此前 `config_pinn`，缺少 SciPy 时再安装 `scipy`，不要无理由改动其它已固定依赖。
-
-## 4. 推荐运行顺序
+The Navier–Stokes dataset is expected at:
 
 ```text
-1. navier_stokes_gradient_diagnostic.ipynb
-   先确认 data ↔ physics 的 gradient norm / cosine / conflict
-        ↓
-2. navier_stokes_adam_baseline.ipynb
-   得到同 optimizer、同 LR 的 simple-sum baseline
-        ↓
-3. navier_stokes_config.ipynb
-   只把梯度合成改成 ConFIG
-        ↓
-4. 对比 relative L2 / loss / conflict / wall time / peak memory
-        ↓
-5. 再决定是否做 4-loss ConFIG / M-ConFIG
+$PINNSFORMER_ROOT/demo/navier_stokes/cylinder_nektar_wake.mat
 ```
 
-## 5. 一个已知的上游/上传代码一致性问题
+Prefer environment variables instead of introducing new hard-coded machine paths.
 
-上传 notebook 的训练阶段使用 $u=\psi_y,\ v=-\psi_x$，但测试阶段写成 $u=\psi_x,\ v=-\psi_y$。上游 Navier–Stokes PINNsFormer notebook 也存在同样的训练/测试不一致。这里不静默覆盖原始事实：诊断代码按训练定义；两个新训练 notebook 的 evaluation 也按训练定义，并在 notebook 中明确注明。
+## Comparison invariants
 
-因此，用户之前得到的 velocity 测试误差不能直接作为新实验公平 baseline；应先用保存的原始 checkpoint 按训练一致定义重新评估。
+When comparing gradient-combination methods, keep the following fixed unless the experiment is explicitly an ablation:
 
-## 6. 当前结论边界
+- PINNsFormer architecture and initialization procedure;
+- dataset and sampled training points;
+- loss definitions and 2-loss/4-loss decomposition;
+- optimizer family, learning rate, step/function-evaluation budget;
+- seed set;
+- evaluation definition and metric implementation.
 
-此目录代码**尚未在 Linux 服务器真实运行**。目前只能说适配逻辑和 Python/Notebook 结构已准备；不能提前声称 ConFIG 能提高 PINNsFormer 精度、降低显存或降低 wall time。
+Record at least relative L2 error, component losses, gradient norms, pairwise gradient cosine/conflict statistics, wall time, and peak memory when practical. Do not infer a method is better from one seed or from loss curves alone.
+
+## Next method: Chebyshev center
+
+For the next implementation, add a runner under `notebooks/navier_stokes/` and follow the server/path/output conventions used by:
+
+1. `navier_stokes_harmonic4_runner_serverpath.ipynb`
+2. `navier_stokes_mconfig4_fixed_roundrobin_runner.ipynb`
+
+Start with both `p=2` and `p=4` under the same implementation/configurable code path. Treat `p=2` as the main candidate and `p=4` as a required norm-geometry ablation. Save raw outputs to `outputs/` and commit only aggregate summaries to `results/summaries/`.
+
+See `AGENTS.md` before making automated changes.

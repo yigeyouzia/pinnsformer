@@ -1,0 +1,36 @@
+# Local Python/Jupyter noise
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+
+# Generated experiment workspaces
+outputs/**
+!outputs/.gitkeep
+**/runs/**
+**/checkpoints/**
+results/raw/**
+
+# Model/checkpoint artifacts
+*.pt
+*.pth
+*.ckpt
+
+# Raw arrays / histories / predictions
+*.npz
+*.npy
+
+# Logs and generated figures
+*.log
+*.png
+*.jpg
+*.jpeg
+*.svg
+
+# Raw CSVs are ignored when they live in generated-output locations.
+outputs/**/*.csv
+results/raw/**/*.csv
+
+# Curated summaries remain versioned.
+!results/summaries/
+!results/summaries/**
