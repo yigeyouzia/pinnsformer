@@ -6,6 +6,8 @@
 
 This repository uses **`main` only** for ongoing work. Agents should not create feature or experiment branches unless the user explicitly overrides this rule.
 
+Experiment methods are notebook-first: method-specific algorithm code, training, multi-seed aggregation and plotting should remain visible in the runnable `.ipynb`, following the existing HARMONIC / M-ConFIG style. Stable shared helpers such as `navier_stokes_common.py` and `gradient_diagnostics.py` may remain external.
+
 ## Layout
 
 ```text
@@ -32,52 +34,36 @@ pinnsformer-config/
 ## Current method inventory
 
 ### Adam
-
 - `notebooks/navier_stokes/adam/navier_stokes_adam_baseline.ipynb`
 
 ### ConFIG
-
 - `notebooks/navier_stokes/config/navier_stokes_config.ipynb`
 - `notebooks/navier_stokes/config/navier_stokes_config2.ipynb`
 - `notebooks/navier_stokes/config/navier_stokes_multiseed_runner.ipynb`
 - `notebooks/navier_stokes/config/navier_stokes_4loss_multiseed_runner.ipynb`
 
 ### M-ConFIG
-
 - `notebooks/navier_stokes/mconfig/navier_stokes_mconfig4_fixed_roundrobin_runner.ipynb`
 - `notebooks/navier_stokes/mconfig/navier_stokes_adaptive_mconfig4_runner.ipynb`
 - `notebooks/navier_stokes/mconfig/navier_stokes_adaptive_mconfig4_rr_override_v2_runner.ipynb`
 
 ### AutoBalance
-
 - `notebooks/navier_stokes/autobalance/navier_stokes_autobalance4_runner.ipynb`
 
 ### HARMONIC
-
 - `notebooks/navier_stokes/harmonic/navier_stokes_harmonic4_runner_serverpath.ipynb`
 
 ### Chebyshev center
-
-- `notebooks/navier_stokes/chebyshev/chebyshev_runner.py` — shared implementation for `p=2` and `p=4`.
 - `notebooks/navier_stokes/chebyshev/navier_stokes_chebyshev2_runner_serverpath.ipynb`
 - `notebooks/navier_stokes/chebyshev/navier_stokes_chebyshev4_runner_serverpath.ipynb`
 
-The Chebyshev runner uses four objectives (`u_data`, `v_data`, `f_u`, `f_v`) to match the current HARMONIC/M-ConFIG comparison line. It follows the Chebyshev dual formulation and adaptive direction scaling from Yoon et al. (2026), arXiv:2605.09975. `p=2` is the primary candidate; `p=4` is retained as a required geometry ablation.
+Both Chebyshev notebooks are self-contained. They include the Chebyshev solver, 4-loss training loop, 3-seed aggregation and plotting directly inside the notebook. `p=2` is the primary candidate; `p=4` is the norm-geometry ablation.
 
-### Analysis / diagnostics
-
-- `notebooks/navier_stokes/analysis/navier_stokes_gradient_diagnostic.ipynb`
-- `notebooks/navier_stokes/analysis/navier_stokes_adam_vs_config_analysis.ipynb`
-- `notebooks/navier_stokes/analysis/cylinder_nektar_wake_dataset_explorer.ipynb`
-- `notebooks/navier_stokes/analysis/plot.ipynb`
-
-## Fair comparison defaults
-
-Current HARMONIC/Chebyshev comparison defaults are:
+Current memory-constrained Chebyshev setting is:
 
 ```text
 PINNsFormer(d_out=2, d_hidden=512, d_model=32, N=1, heads=2)
-N_TRAIN=800
+N_TRAIN=600
 pseudo sequence=5
 TIME_STEP=1e-2
 seeds=0,1,2
@@ -87,7 +73,27 @@ steps=1000
 objectives=u_data,v_data,f_u,f_v
 ```
 
-The Chebyshev notebooks intentionally inherit this protocol instead of reproducing the paper's MLP benchmark architecture, because the purpose here is a controlled solver comparison on the existing PINNsFormer Navier–Stokes experiment.
+The previous ConFIG/HARMONIC 800-point results remain a separate benchmark. Do not present 600-point Chebyshev vs 800-point baselines as a strict method-only comparison without labeling the sampling difference.
+
+## Chebyshev outputs and plots
+
+Raw runs are written to:
+
+```text
+outputs/navier_stokes_chebyshev2/
+outputs/navier_stokes_chebyshev4/
+```
+
+Each notebook produces per-seed history/metrics plus aggregate `mean_std_summary.csv`. The plotting cell generates:
+
+- component-loss + physics curves;
+- dual `alpha` trajectories;
+- raw gradient cosine geometry;
+- Chebyshev direction alignment;
+- Frank-Wolfe gap / dual-norm diagnostics;
+- final 3-seed Relative-L2 mean ± std.
+
+Generated CSV/PNG/checkpoint files under `outputs/` are ignored by git. Promote only checked aggregate tables to `results/summaries/`.
 
 ## Server paths
 
@@ -102,23 +108,5 @@ Dataset:
 ```text
 $PINNSFORMER_ROOT/demo/navier_stokes/cylinder_nektar_wake.mat
 ```
-
-## Running Chebyshev
-
-Notebook entry points:
-
-```text
-notebooks/navier_stokes/chebyshev/navier_stokes_chebyshev2_runner_serverpath.ipynb
-notebooks/navier_stokes/chebyshev/navier_stokes_chebyshev4_runner_serverpath.ipynb
-```
-
-Or run the shared Python runner directly:
-
-```bash
-python pinnsformer-config/notebooks/navier_stokes/chebyshev/chebyshev_runner.py --p 2
-python pinnsformer-config/notebooks/navier_stokes/chebyshev/chebyshev_runner.py --p 4
-```
-
-Raw runs are written to `outputs/navier_stokes_chebyshev2/` and `outputs/navier_stokes_chebyshev4/` and are ignored by git. Promote only checked aggregate tables to `results/summaries/`.
 
 See `AGENTS.md` before making automated changes.
